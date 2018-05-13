@@ -1,0 +1,56 @@
+---
+version: "2"
+services:
+  nginx:
+   image: nginx:latest
+   ports:
+     - '80:80'
+   volumes:
+     - ./nginx:/etc/nginx/conf.d
+     - ./logs/nginx:/var/log/nginx
+     - ./wordpress:/var/www/html
+   environment:
+     - PHP_SESSION_HANDLER="redis"
+     - PHP_SESSION_REDIS_DB= "0"
+     - NGINX_REDIS_CACHE_TTL_DEFAULT= "1"
+     - NGINX_REDIS_CACHE_TTL_MAX="1"
+   network_mode: bridge
+   links:
+     - wordpress
+   restart: always
+
+  mysql:
+   image: mariadb
+   ports:
+     - '3306:3306'
+   volumes:
+     - ./db-data:/var/lib/mysql
+   environment:
+     - MYSQL_ROOT_PASSWORD=gssrocks2016
+   restart: always
+   network_mode: bridge
+ 
+  wordpress:
+   image: wordpress:4.7.1-php7.0-fpm
+   ports:
+     - '9000:9000'
+   volumes:
+     - ./wordpress:/var/www/html
+   environment:
+     - WORDPRESS_DB_NAME=wordpress
+     - WORDPRESS_TABLE_PREFIX=wp_
+     - WORDPRESS_DB_HOST=mysql
+     - WORDPRESS_DB_PASSWORD=gssrocks2016
+     
+   links:
+     - mysql
+     - redis
+   restart: always
+   network_mode: bridge
+  
+  redis:
+    image: redis
+    network_mode: bridge
+
+    
+
